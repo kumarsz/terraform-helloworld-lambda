@@ -17,20 +17,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Configure AWS credentials for Terraform to talk to AWS
       - name: Configure AWS Credentials from OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::730335218553:role/GitHubActionsTerraformRole
           aws-region: us-east-1
 
+      # Setup Terraform CLI
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
+      # Terraform init will automatically connect to Terraform Cloud backend
       - name: Terraform Init
         run: terraform init
 
+      # Generate and upload plan to Terraform Cloud for review
       - name: Terraform Plan
-        run: terraform plan
+        run: terraform plan -input=false -out=tfplan
 
+      # Apply only after plan approval
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -input=false tfplan

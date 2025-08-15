@@ -40,3 +40,13 @@ resource "aws_lambda_function" "terraform_lambda" {
 
   role = aws_iam_role.lambda_role.arn
 }
+
+terraform {
+  cloud {
+    organization = "test-one-kumarsz"
+
+    workspaces {
+      name = "terraform-helloworld-lambda"
+    }
+  }
+}
